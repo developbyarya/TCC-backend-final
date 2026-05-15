@@ -1,0 +1,27 @@
+{
+  "name": "tcc-backend-final",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node src/index.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "test": "node -e \"require('./src/app').createApp()\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@prisma/client": "^5.19.1",
+  "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "redis": "^4.7.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.19.1"
+  }
+}

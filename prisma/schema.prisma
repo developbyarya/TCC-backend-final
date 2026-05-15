@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SENIMAN
+  KURATOR
+  KOLEKTOR
+}
+
+enum VerificationStatus {
+  VERIFIED
+  UNVERIFIED
+}
+
+enum BidStatus {
+  CLOSED
+  OPEN
+  FAILED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  full_name    String?
+  email        String   @unique
+  phone_number String
+  passwordHash String
+  role         UserRole
+  alt_name     String?
+
+  artworks     Artwork[] @relation("ArtistArtworks")
+  ownedArt     Artwork[] @relation("OwnerArtworks")
+  bids         Bid[]
+  payments     Payment[]
+}
+
+model Artwork {
+  id                  String             @id @default(cuid())
+  nama_karya          String
+  deskripsi           String?
+  katalog             String?
+  tags                String?
+  verification_status VerificationStatus @default(UNVERIFIED)
+  min_bid_ammount     Int
+  open_bid_time       DateTime?
+  close_bid_time      DateTime?
+
+  artistId            String
+  ownerId             String?
+
+  artist              User   @relation("ArtistArtworks", fields: [artistId], references: [id])
+  owner               User?  @relation("OwnerArtworks", fields: [ownerId], references: [id])
+  bids                Bid[]
+}
+
+model Bid {
+  id         String    @id @default(cuid())
+  artworksId String
+  amount     Int
+  bidById    String
+  status     BidStatus
+  timestamp  DateTime
+
+  artwork    Artwork @relation(fields: [artworksId], references: [id])
+  bidBy      User    @relation(fields: [bidById], references: [id])
+  payments   Payment[]
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  amount    Int
+  fee       Float    @default(0.035)
+  bidId     String
+  paidById  String
+  timestamp DateTime
+
+  bid       Bid  @relation(fields: [bidId], references: [id])
+  paidBy    User @relation(fields: [paidById], references: [id])
+}
