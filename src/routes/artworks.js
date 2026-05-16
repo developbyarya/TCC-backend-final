@@ -1,8 +1,11 @@
 const express = require("express");
+const multer = require("multer");
 const { prisma } = require("../prisma");
 const { requireAuth, requireRole } = require("../middleware/auth");
+const { uploadImageBuffer } = require("../services/gcs");
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.post("/create", requireAuth, requireRole(["SENIMAN"]), async (req, res) => {
   const artwork = await prisma.artwork.create({
@@ -105,6 +108,43 @@ router.put(
     });
 
     return res.json(artwork);
+  }
+);
+
+router.post(
+  "/:id/image",
+  requireAuth,
+  requireRole(["SENIMAN"]),
+  upload.single("image"),
+  async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ message: "Image file is required" });
+    }
+
+    const artwork = await prisma.artwork.findFirst({
+      where: { id: req.params.id, artistId: req.user.id },
+    });
+
+    if (!artwork) {
+      return res.status(404).json({ message: "Artwork not found" });
+    }
+
+    const uploadResult = await uploadImageBuffer({
+      buffer: req.file.buffer,
+      originalName: req.file.originalname,
+      contentType: req.file.mimetype,
+    });
+
+    const updatedArtwork = await prisma.artwork.update({
+      where: { id: req.params.id },
+      data: { image_url: uploadResult.publicUrl },
+    });
+
+    return res.json({
+      artwork: updatedArtwork,
+      image_url: uploadResult.publicUrl,
+      gs_uri: uploadResult.gsUri,
+    });
   }
 );
 

@@ -166,6 +166,27 @@ Verify artwork (requires `KURATOR`).
 ### PUT `/karya-seni/:id/unverify`
 Unverify artwork (requires `KURATOR`).
 
+### POST `/karya-seni/:id/image`
+Upload artwork image to GCS (requires `SENIMAN`).
+
+**Content-Type**
+`multipart/form-data`
+
+**Form Data**
+- `image` (file, required)
+
+**Response 200**
+```json
+{
+  "artwork": {
+    "id": "<artwork_id>",
+    "image_url": "https://storage.googleapis.com/<bucket>/artworks/<file>.jpg"
+  },
+  "image_url": "https://storage.googleapis.com/<bucket>/artworks/<file>.jpg",
+  "gs_uri": "gs://<bucket>/artworks/<file>.jpg"
+}
+```
+
 ---
 
 # Bidding Routes (`/bid`)

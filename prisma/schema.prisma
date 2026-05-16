@@ -44,6 +44,7 @@ model Artwork {
   id                  String             @id @default(cuid())
   nama_karya          String
   deskripsi           String?
+  image_url           String?
   katalog             String?
   tags                String?
   verification_status VerificationStatus @default(UNVERIFIED)
