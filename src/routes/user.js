@@ -54,6 +54,27 @@ router.post("/register", async (req, res) => {
   return res.status(201).json({ id: user.id });
 });
 
+router.get("/profile", requireAuth, async (req, res) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id },
+    select: {
+      id: true,
+      username: true,
+      full_name: true,
+      email: true,
+      phone_number: true,
+      role: true,
+      alt_name: true,
+    },
+  });
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  return res.json({ user });
+});
+
 router.put("/update/profile", requireAuth, async (req, res) => {
   const { full_name, alt_name } = req.body;
 

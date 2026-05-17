@@ -16,9 +16,10 @@
 ### ROUTES 
 1. Login (/user/login) -> POST username/email, password
 2. REGISTER (/user/register) -> POST ALL FIELD
-3. PUT (/user/update/profile) -> Update Profile full_name, alt_name
-4. CHANGE PASSWORD (/user/update/profile) -> PUT  
-5. DELETE ACCOUNT (/user/delte)
+3. GET PROFILE (/user/profile) -> GET (Bearer token)
+4. PUT (/user/update/profile) -> Update Profile full_name, alt_name
+5. CHANGE PASSWORD (/user/update/profile) -> PUT  
+6. DELETE ACCOUNT (/user/delte)
 
 ## ARTWORKS (/karya-seni)
 ### STRUCTURE

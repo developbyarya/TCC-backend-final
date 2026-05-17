@@ -46,6 +46,7 @@ const createApp = () => {
     return res.status(isHealthy ? 200 : 503).json({
       status: isHealthy ? "ok" : "degraded",
       checks,
+      version: "0.2"
     });
   });
 

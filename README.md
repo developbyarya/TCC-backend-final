@@ -24,6 +24,20 @@ npm install
 npm run dev
 ```
 
+## 🧪 Seed + Endpoint Test
+This script registers demo users, creates artworks with random images, runs bidding/payment flows, and verifies key endpoints. The API server must be running.
+
+```
+npm run seed:test
+```
+
+Optional overrides:
+
+```
+BASE_URL=http://localhost:3000 npm run seed:test
+DRY_RUN=1 npm run seed:test
+```
+
 ## 🧪 Prisma
 ```
 npm run prisma:generate

@@ -96,6 +96,24 @@ Register new user.
 { "id": "<user_id>" }
 ```
 
+### GET `/user/profile`
+Get current user profile (requires auth).
+
+**Response 200**
+```json
+{
+  "user": {
+    "id": "<user_id>",
+    "username": "arya",
+    "full_name": "Arya Putra",
+    "email": "arya@mail.com",
+    "phone_number": "0812345678",
+    "role": "SENIMAN",
+    "alt_name": "Anonymous"
+  }
+}
+```
+
 ### PUT `/user/update/profile`
 Update profile (requires auth).
 
@@ -140,6 +158,10 @@ Create artwork (requires `SENIMAN`).
 }
 ```
 
+**Note**
+- Image is uploaded separately via `POST /karya-seni/:id/image`.
+- After upload, the artwork will have `image_url` filled.
+
 ### GET `/karya-seni/all`
 List artworks, optional katalog filter.
 
@@ -150,6 +172,9 @@ List artworks, optional katalog filter.
 
 ### GET `/karya-seni/:id`
 Get artwork details.
+
+**Response includes**
+- `image_url` (string, nullable)
 
 ### PUT `/karya-seni/:id/owns`
 Update ownership to current user (requires auth).
