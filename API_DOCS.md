@@ -72,8 +72,51 @@ Login using username or email.
 
 **Response 200**
 ```json
-{ "token": "<jwt>" }
+{ "token": "<jwt>", "refreshToken": "<refresh_jwt>" }
 ```
+
+### POST `/user/refresh`
+Exchange a refresh token for a new access token (and rotate the refresh token). The request must include the refresh token in the request body.
+
+**Body**
+```json
+{ "refreshToken": "<refresh_jwt>" }
+```
+
+The refresh token is a JWT that contains at minimum the following claims:
+- `id` — the user id
+- `role` — the user's role
+- `jti` — a unique identifier for this refresh token (used for revocation/rotation)
+- `type` — must be the string `"refresh"`
+
+On success the server will:
+- verify the refresh token and its `jti` exists in Redis under key `refresh:<userId>:<jti>`
+- delete the old `jti` key from Redis
+- issue a new refresh token with a new `jti` and persist it in Redis
+- return a fresh access token and new refresh token
+
+**Response 200**
+```json
+{ "token": "<new_access_jwt>", "refreshToken": "<new_refresh_jwt>" }
+```
+
+### POST `/user/logout`
+Revoke a refresh token. The client must supply the `refreshToken` in the request body. The server will remove the corresponding `refresh:<userId>:<jti>` key from Redis so the refresh token can no longer be used.
+
+**Body**
+```json
+{ "refreshToken": "<refresh_jwt>" }
+```
+
+**Response 200**
+```json
+{ "message": "Logged out" }
+```
+
+**Notes**
+- Refresh tokens are stored server-side in Redis for revocation and rotation. Keys follow the pattern `refresh:<userId>:<jti>` and have a TTL matching the token expiry (30 days).
+- If a refresh token is missing from Redis (revoked or expired), `/user/refresh` will return 401.
+- Clients must provide the refresh token in the request body (not as Authorization header) when calling `/user/refresh` or `/user/logout`.
 
 ### POST `/user/register`
 Register new user.
@@ -236,10 +279,60 @@ Get bid detail (requires auth).
 ### GET `/bid/low-high`
 Get lowest and highest bid (requires auth).
 
+**Note:** The server caches the result of this endpoint in Redis for a short period (30 seconds) to speed up repeated requests. Responses within the cache window may be slightly stale.
+
 ### GET `/bid`
 Get all bids (requires auth).
 
 ---
+
+# Wishlist Routes (`/wishlisht`)
+
+These endpoints let authenticated users maintain a personal wishlist of artworks. The wishlist is stored in Redis as a set under the key `wishlist:<userId>`.
+
+### GET `/wishlisht`
+Get the current user's wishlist (requires auth).
+
+**Response 200**
+```json
+{
+  "wishlist": [
+    {
+      "id": "<artwork_id>",
+      "nama_karya": "Sunset",
+      "deskripsi": "Oil on canvas",
+      "katalog": "Modern",
+      "image_url": "https://...",
+      "min_bid_ammount": 1000
+    }
+  ]
+}
+```
+
+### POST `/wishlisht`
+Add an artwork to the current user's wishlist (requires auth).
+
+**Body**
+```json
+{ "artworkId": "<artwork_id>" }
+```
+
+**Response 201**
+```json
+{ "message": "Added to wishlist" }
+```
+
+### DELETE `/wishlisht/:artworkId`
+Remove an artwork from the current user's wishlist (requires auth).
+
+**Response 200**
+```json
+{ "message": "Removed from wishlist" }
+```
+
+**Notes**
+- Wishlist is persisted in Redis (no TTL by default). If you need persistence beyond Redis lifecycle, consider backing up or using a DB-backed wishlist.
+- When an artwork is deleted from the database it may still appear in users' wishlist sets until cleaned up; consider adding cleanup logic if needed.
 
 # Payments Routes (`/payments`)
 

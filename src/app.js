@@ -5,6 +5,7 @@ const userRoutes = require("./routes/user");
 const artworksRoutes = require("./routes/artworks");
 const biddingRoutes = require("./routes/bidding");
 const paymentsRoutes = require("./routes/payments");
+const wishlishtRoutes = require("./routes/wishlisht");
 const { prisma } = require("./prisma");
 const { redis, connectRedis } = require("./redis");
 
@@ -18,6 +19,7 @@ const createApp = () => {
   app.use("/karya-seni", artworksRoutes);
   app.use("/bid", biddingRoutes);
   app.use("/payments", paymentsRoutes);
+  app.use("/wishlisht", wishlishtRoutes);
 
   app.get("/health", async (_req, res) => {
     const checks = {
@@ -46,7 +48,7 @@ const createApp = () => {
     return res.status(isHealthy ? 200 : 503).json({
       status: isHealthy ? "ok" : "degraded",
       checks,
-      version: "0.2"
+      version: "0.3"
     });
   });
 

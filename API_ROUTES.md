@@ -47,12 +47,6 @@
 
 ## BIDDING (/bid)
 ### STRUCTURE
-- ID
-- artworks_id* -> FK to artworks
-- ammount*
-- bid_by* -> FK to users
-- status*: ["CLOSED", "OPEN", "FAILED"] CLOSED meaning its final bid and win the artworks
-- timestamp* -> TIMESTAMP
 
 ### ROUTES
 1. CREATE NEW BID (/bid/new)
@@ -76,5 +70,21 @@
 
 
 
+
+## WISHLIST (/wishlist)
+### PURPOSE
+Allow authenticated users to save artwork they like for quick access later.
+
+### STORAGE
+- Wishlists are stored in Redis as sets under key `wishlist:<userId>`.
+
+### ROUTES
+1. GET `/wishlist` -> returns full artwork objects in the user's wishlist (requires Bearer token)
+2. POST `/wishlist` -> add artwork to wishlist. Body: `{ "artworkId": "<id>" }`
+3. DELETE `/wishlist/:artworkId` -> remove artwork from wishlist
+
+### NOTES
+- The wishlist is not persisted outside Redis by default. If Redis is flushed, wishlists will be lost. Consider adding persistence if needed.
+- Artwork deletions are not automatically propagated to wishlists; consider cleanup logic if desired.
 
 *mandatory field
