@@ -26,7 +26,7 @@ const USERS = [
     phone_number: "0811111111",
     password: "secret123",
     role: "SENIMAN",
-    alt_name: "Anon Artist",
+    alt_name: "Artist tampan",
   },
   {
     key: "curator",

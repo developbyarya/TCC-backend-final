@@ -43,6 +43,7 @@ router.get("/", requireAuth, async (req, res) => {
     artworkId: p.bid?.artwork?.id || '',
     artworkTitle: p.bid?.artwork?.nama_karya || '',
     artworkImageUrl: p.bid?.artwork?.image_url || '',
+    artistName: p.bid?.artwork?.artist?.alt_name || p.bid?.artwork?.artist?.full_name || p.bid?.artwork?.artist?.username || '',
     paymentMethod: 'Bank Transfer',
   }));
 
