@@ -24,7 +24,9 @@ router.get("/", requireAuth, async (req, res) => {
     include: {
       bid: {
         include: {
-          artwork: true,
+          artwork: {
+            include: {artist: true}
+          },
         },
       },
     },

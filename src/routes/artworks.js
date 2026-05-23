@@ -30,6 +30,7 @@ router.get("/all", async (req, res) => {
 
   const artworks = await prisma.artwork.findMany({
     where: katalogFilter ? { katalog: { in: katalogFilter } } : undefined,
+    include: {artist: true},
   });
 
   return res.json(artworks);

@@ -5,6 +5,18 @@ const { randomUUID } = require("crypto");
 const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
 const DRY_RUN = process.argv.includes("--dry-run") || process.env.DRY_RUN === "1";
 
+const getArgValue = (name) => {
+  const prefix = `--${name}=`;
+  const arg = process.argv.find((entry) => entry.startsWith(prefix));
+  if (!arg) return undefined;
+  return arg.slice(prefix.length);
+};
+
+const ARTWORK_COUNT = Number(process.env.ARTWORK_COUNT || getArgValue("artwork-count") || 5);
+const CLOSE_BID_MONTHS = Number(process.env.CLOSE_BID_MONTHS || getArgValue("close-bid-months") || 0);
+const CLOSE_BID_DAYS = Number(process.env.CLOSE_BID_DAYS || getArgValue("close-bid-days") || 0);
+const WALLET_TOPUP = Number(process.env.WALLET_TOPUP || getArgValue("wallet-topup") || 1000000);
+
 const USERS = [
   {
     key: "artist",
@@ -111,12 +123,22 @@ const api = async (path, { method = "GET", token, body, headers } = {}) => {
 };
 
 const registerOrLogin = async (user) => {
-  log.step(`Registering ${user.role} (${user.username})`);
+  log.step(`Logging in ${user.role} (${user.username})`);
   try {
-    await api("/user/register", { method: "POST", body: user });
+    const { data } = await api("/user/login", {
+      method: "POST",
+      body: {
+        username: user.username,
+        email: user.email,
+        password: user.password,
+      },
+    });
+    return data.token;
   } catch (error) {
-    log.warn(`Register failed, trying login: ${error.message}`);
+    log.warn(`Login failed, attempting register: ${error.message}`);
   }
+
+  await api("/user/register", { method: "POST", body: user });
 
   const { data } = await api("/user/login", {
     method: "POST",
@@ -128,6 +150,17 @@ const registerOrLogin = async (user) => {
   });
 
   return data.token;
+};
+
+const topupWallet = async (token, amount) => {
+  if (!Number.isFinite(amount) || amount <= 0) return;
+
+  await api("/wallet/topup", {
+    method: "PUT",
+    token,
+    body: { amount },
+  });
+  log.step(`Topped up wallet by ${amount}`);
 };
 
 const fetchRandomImage = async (seed) => {
@@ -150,6 +183,17 @@ const createArtworkPayload = (index) => {
   const now = new Date();
   const open = new Date(now.getTime() + index * 60 * 1000);
   const close = new Date(now.getTime() + (index + 60) * 60 * 1000);
+
+  if (CLOSE_BID_MONTHS || CLOSE_BID_DAYS) {
+    const customClose = new Date(now.getTime() + index * 60 * 1000);
+    if (CLOSE_BID_MONTHS) {
+      customClose.setMonth(customClose.getMonth() + CLOSE_BID_MONTHS);
+    }
+    if (CLOSE_BID_DAYS) {
+      customClose.setDate(customClose.getDate() + CLOSE_BID_DAYS);
+    }
+    close.setTime(customClose.getTime());
+  }
 
   return {
     nama_karya: `Artwork ${index + 1}`,
@@ -177,8 +221,11 @@ const main = async () => {
     tokens[user.key] = await registerOrLogin(user);
   }
 
+  await topupWallet(tokens.collector, WALLET_TOPUP);
+  await topupWallet(tokens.curator, WALLET_TOPUP);
+
   const artworks = [];
-  for (let i = 0; i < 5; i += 1) {
+  for (let i = 0; i < ARTWORK_COUNT; i += 1) {
     const { data } = await api("/karya-seni/create", {
       method: "POST",
       token: tokens.artist,
@@ -203,7 +250,7 @@ const main = async () => {
     log.step(`Uploaded image for ${artwork.id}`);
   }
 
-  for (let i = 0; i < 3; i += 1) {
+  for (let i = 0; i < Math.min(3, artworks.length); i += 1) {
     await api(`/karya-seni/${artworks[i].id}/verify`, {
       method: "PUT",
       token: tokens.curator,
@@ -211,17 +258,19 @@ const main = async () => {
     log.step(`Verified ${artworks[i].id}`);
   }
 
-  await api(`/karya-seni/${artworks[3].id}/unverify`, {
-    method: "PUT",
-    token: tokens.curator,
-  });
-  log.step(`Unverified ${artworks[3].id}`);
+  if (artworks[3]) {
+    await api(`/karya-seni/${artworks[3].id}/unverify`, {
+      method: "PUT",
+      token: tokens.curator,
+    });
+    log.step(`Unverified ${artworks[3].id}`);
+  }
 
   await api("/karya-seni/all");
   log.step("Fetched artwork list");
 
   const bids = [];
-  for (let i = 0; i < 2; i += 1) {
+  for (let i = 0; i < Math.min(2, artworks.length); i += 1) {
     const { data } = await api("/bid/new", {
       method: "POST",
       token: tokens.collector,
@@ -234,16 +283,18 @@ const main = async () => {
     log.step(`Created bid ${data.id}`);
   }
 
-  const outbidArtwork = artworks[0];
-  await api("/bid/new", {
-    method: "POST",
-    token: tokens.curator,
-    body: {
-      artworks_id: outbidArtwork.id,
-      ammount: outbidArtwork.min_bid_ammount + 500,
-    },
-  });
-  log.step(`Outbid highest bid for ${outbidArtwork.id}`);
+  if (artworks[0]) {
+    const outbidArtwork = artworks[0];
+    await api("/bid/new", {
+      method: "POST",
+      token: tokens.curator,
+      body: {
+        artworks_id: outbidArtwork.id,
+        ammount: outbidArtwork.min_bid_ammount + 500,
+      },
+    });
+    log.step(`Outbid highest bid for ${outbidArtwork.id}`);
+  }
 
   const notificationResponse = await api("/notification", {
     token: tokens.collector,
@@ -256,28 +307,34 @@ const main = async () => {
   await api("/bid", { token: tokens.collector });
   log.step("Fetched bid stats");
 
-  await api(`/bid/${bids[1].id}/cancle`, {
-    method: "PUT",
-    token: tokens.collector,
-  });
-  log.step(`Cancelled bid ${bids[1].id}`);
+  if (bids[1]) {
+    await api(`/bid/${bids[1].id}/cancle`, {
+      method: "PUT",
+      token: tokens.collector,
+    });
+    log.step(`Cancelled bid ${bids[1].id}`);
+  }
 
-  await api(`/karya-seni/${artworks[0].id}/owns`, {
-    method: "PUT",
-    token: tokens.collector,
-  });
-  log.step(`Assigned ownership for ${artworks[0].id}`);
+  if (artworks[0]) {
+    await api(`/karya-seni/${artworks[0].id}/owns`, {
+      method: "PUT",
+      token: tokens.collector,
+    });
+    log.step(`Assigned ownership for ${artworks[0].id}`);
+  }
 
-  const payment = await api("/payments", {
-    method: "POST",
-    token: tokens.collector,
-    body: {
-      ammounts: artworks[0].min_bid_ammount + 200,
-      fee: 0.035,
-      for_bid: bids[0].id,
-    },
-  });
-  log.step(`Created payment ${payment.data.id}`);
+  if (artworks[0] && bids[0]) {
+    const payment = await api("/payments", {
+      method: "POST",
+      token: tokens.collector,
+      body: {
+        ammounts: artworks[0].min_bid_ammount + 200,
+        fee: 0.035,
+        for_bid: bids[0].id,
+      },
+    });
+    log.step(`Created payment ${payment.data.id}`);
+  }
 
   await api("/payments", { token: tokens.collector });
   log.step("Fetched payment list");
