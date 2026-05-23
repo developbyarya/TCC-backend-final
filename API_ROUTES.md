@@ -74,6 +74,20 @@
 1. CREATE NEW PAYMENTS (POST /payments)
 2. READ ALL PAYMENTS HISTORY (GET /payments) -> only for that user 
 
+## CERTIFICATE (/certificate)
+### STRUCTURE
+- id
+- artworksId
+- artist_altname
+- artwork_name
+- bid_price_highest
+- congratulation_sentence
+- certificate_date
+
+### ROUTES
+1. CREATE CERTIFICATE (POST /certificate) -> body: { artworks_id, congratulation_sentence? }
+2. GET CERTIFICATE DETAIL (GET /certificate/:id)
+
 ## WALLET (/wallet)
 ### PURPOSE
 Simple e-wallet balance stored in Redis per user.

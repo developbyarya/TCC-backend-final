@@ -58,6 +58,19 @@ model Artwork {
   artist              User   @relation("ArtistArtworks", fields: [artistId], references: [id])
   owner               User?  @relation("OwnerArtworks", fields: [ownerId], references: [id])
   bids                Bid[]
+  certificate         Certificate?
+}
+
+model Certificate {
+  id                       String   @id @default(cuid())
+  artworksId               String   @unique
+  artist_altname           String
+  artwork_name             String
+  bid_price_highest        Int
+  congratulation_sentence  String
+  certificate_date         DateTime @default(now())
+
+  artwork                  Artwork  @relation(fields: [artworksId], references: [id])
 }
 
 model Bid {
