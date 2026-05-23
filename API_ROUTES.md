@@ -74,6 +74,14 @@
 1. CREATE NEW PAYMENTS (POST /payments)
 2. READ ALL PAYMENTS HISTORY (GET /payments) -> only for that user 
 
+## WALLET (/wallet)
+### PURPOSE
+Simple e-wallet balance stored in Redis per user.
+
+### ROUTES
+1. GET `/wallet` -> returns `{ balance }` (0 if never topped up)
+2. PUT `/wallet/topup` -> body `{ "amount": number }`, adds to balance
+
 
 
 
