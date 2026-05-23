@@ -8,9 +8,9 @@ const DRY_RUN = process.argv.includes("--dry-run") || process.env.DRY_RUN === "1
 const USERS = [
   {
     key: "artist",
-    username: "artist_demo",
-    full_name: "Artist Demo",
-    email: "artist_demo@example.com",
+    username: "artsist-tampan-nan-baik-hati",
+    full_name: "Gradiva",
+    email: "grdv@example.com",
     phone_number: "0811111111",
     password: "secret123",
     role: "SENIMAN",
@@ -18,9 +18,9 @@ const USERS = [
   },
   {
     key: "curator",
-    username: "curator_demo",
-    full_name: "Curator Demo",
-    email: "curator_demo@example.com",
+    username: "david",
+    full_name: "M David",
+    email: "david@example.com",
     phone_number: "0822222222",
     password: "secret123",
     role: "KURATOR",
@@ -28,9 +28,9 @@ const USERS = [
   },
   {
     key: "collector",
-    username: "collector_demo",
-    full_name: "Collector Demo",
-    email: "collector_demo@example.com",
+    username: "Reza",
+    full_name: "Reza Demo",
+    email: "reza@example.com",
     phone_number: "0833333333",
     password: "secret123",
     role: "KOLEKTOR",
@@ -52,6 +52,14 @@ const mockResponse = (path) => {
   }
   if (path.includes("/bid/new")) {
     return { id: mockId() };
+  }
+  if (path.includes("/notification")) {
+    return [
+      {
+        id: mockId(),
+        message: "Mock notification: your bid was outbid.",
+      },
+    ];
   }
   if (path.includes("/payments")) {
     return { id: mockId() };
@@ -225,6 +233,23 @@ const main = async () => {
     bids.push(data);
     log.step(`Created bid ${data.id}`);
   }
+
+  const outbidArtwork = artworks[0];
+  await api("/bid/new", {
+    method: "POST",
+    token: tokens.curator,
+    body: {
+      artworks_id: outbidArtwork.id,
+      ammount: outbidArtwork.min_bid_ammount + 500,
+    },
+  });
+  log.step(`Outbid highest bid for ${outbidArtwork.id}`);
+
+  const notificationResponse = await api("/notification", {
+    token: tokens.collector,
+  });
+  log.step("Fetched notifications for collector");
+  console.log("\n[seed] Notifications:", notificationResponse.data);
 
   await api(`/bid/${bids[0].id}/detail`, { token: tokens.collector });
   await api("/bid/low-high", { token: tokens.collector });

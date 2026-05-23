@@ -55,6 +55,12 @@
 4. BID LOW/HIGH (/bid/low-high)
 5. ALL BID (/bid)
 
+## Notification
+
+### ROUTES
+1. GET /notification
+2. PUT /notification/read/:id
+
 ## PAYMENTS (/payments/)
 ### STRUCTURE
 1. *ID

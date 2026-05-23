@@ -21,9 +21,31 @@ router.post("/", requireAuth, async (req, res) => {
 router.get("/", requireAuth, async (req, res) => {
   const payments = await prisma.payment.findMany({
     where: { paidById: req.user.id },
+    include: {
+      bid: {
+        include: {
+          artwork: true,
+        },
+      },
+    },
+    orderBy: { timestamp: 'desc' },
   });
 
-  return res.json(payments);
+  const formattedPayments = payments.map((p) => ({
+    id: p.id,
+    amount: p.amount,
+    fee: p.fee,
+    bidId: p.bidId,
+    paidById: p.paidById,
+    timestamp: p.timestamp,
+    artworkId: p.bid?.artwork?.id || '',
+    artworkTitle: p.bid?.artwork?.nama_karya || '',
+    artworkImageUrl: p.bid?.artwork?.image_url || '',
+    paymentMethod: 'Bank Transfer',
+  }));
+
+  return res.json(formattedPayments);
 });
+
 
 module.exports = router;

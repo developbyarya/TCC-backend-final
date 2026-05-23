@@ -1,20 +1,53 @@
 const express = require("express");
+const { randomUUID } = require("crypto");
 const { prisma } = require("../prisma");
 const { requireAuth } = require("../middleware/auth");
-const { redis } = require("../redis");
+const { redis, connectRedis } = require("../redis");
 
 const router = express.Router();
 
 router.post("/new", requireAuth, async (req, res) => {
+  const artworksId = req.body.artworks_id;
+  const amount = req.body.ammount;
+
+  const previousHighest = await prisma.bid.findFirst({
+    where: { artworksId },
+    orderBy: { amount: "desc" },
+  });
+
   const bid = await prisma.bid.create({
     data: {
-      artworksId: req.body.artworks_id,
-      amount: req.body.ammount,
+      artworksId,
+      amount,
       bidById: req.user.id,
       status: "OPEN",
       timestamp: new Date(),
     },
   });
+
+  const isNewHighest = !previousHighest || amount > previousHighest.amount;
+  const shouldNotify =
+    isNewHighest && previousHighest && previousHighest.bidById !== req.user.id;
+
+  if (shouldNotify) {
+    const notificationId = randomUUID();
+    const key = `notificationBid:user:${previousHighest.bidById}:${notificationId}`;
+    const message = `Your bid was outbid for artwork ${artworksId}. New highest bid: ${amount}.`;
+    const payload = {
+      id: notificationId,
+      message,
+      bidId: bid.id,
+      artworksId,
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      await connectRedis();
+      await redis.set(key, JSON.stringify(payload));
+    } catch (err) {
+      console.error("Failed to store bid notification", err.message || err);
+    }
+  }
 
   return res.status(201).json(bid);
 });

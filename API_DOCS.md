@@ -218,6 +218,34 @@ Get artwork details.
 
 **Response includes**
 - `image_url` (string, nullable)
+- `artist` (object)
+
+**Response 200**
+```json
+{
+  "id": "<artwork_id>",
+  "nama_karya": "Sunset",
+  "deskripsi": "Oil on canvas",
+  "katalog": "Modern",
+  "tags": "oil,canvas,sunset",
+  "image_url": "https://...",
+  "verification_status": "UNVERIFIED",
+  "min_bid_ammount": 1000,
+  "open_bid_time": "2026-05-16T10:00:00Z",
+  "close_bid_time": "2026-05-20T10:00:00Z",
+  "artistId": "<artist_id>",
+  "ownerId": null,
+  "artist": {
+    "id": "<artist_id>",
+    "username": "arya",
+    "full_name": "Arya Putra",
+    "email": "arya@mail.com",
+    "phone_number": "0812345678",
+    "role": "SENIMAN",
+    "alt_name": "Anonymous"
+  }
+}
+```
 
 ### PUT `/karya-seni/:id/owns`
 Update ownership to current user (requires auth).

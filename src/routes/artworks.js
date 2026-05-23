@@ -38,6 +38,9 @@ router.get("/all", async (req, res) => {
 router.get("/:id", async (req, res) => {
   const artwork = await prisma.artwork.findUnique({
     where: { id: req.params.id },
+    include: {
+      artist: true,
+    },
   });
 
   if (!artwork) {

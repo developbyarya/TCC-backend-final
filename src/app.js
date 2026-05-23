@@ -6,6 +6,7 @@ const artworksRoutes = require("./routes/artworks");
 const biddingRoutes = require("./routes/bidding");
 const paymentsRoutes = require("./routes/payments");
 const wishlishtRoutes = require("./routes/wishlisht");
+const notificationRoutes = require("./routes/notification");
 const { prisma } = require("./prisma");
 const { redis, connectRedis } = require("./redis");
 
@@ -20,6 +21,7 @@ const createApp = () => {
   app.use("/bid", biddingRoutes);
   app.use("/payments", paymentsRoutes);
   app.use("/wishlisht", wishlishtRoutes);
+  app.use("/notification", notificationRoutes);
 
   app.get("/health", async (_req, res) => {
     const checks = {
