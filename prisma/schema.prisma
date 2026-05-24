@@ -22,6 +22,8 @@ enum BidStatus {
   CLOSED
   OPEN
   FAILED
+  OUTBID
+  TERTINGGI
 }
 
 model User {

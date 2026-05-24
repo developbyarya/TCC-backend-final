@@ -16,9 +16,15 @@ router.post("/new", requireAuth, async (req, res) => {
   }
 
   const previousHighest = await prisma.bid.findFirst({
-    where: { artworksId },
+    where: { artworksId, status: { not: "FAILED" } },
     orderBy: { amount: "desc" },
   });
+
+  const artwork = await prisma.artwork.findUnique({
+    where: { id: artworksId },
+    select: { nama_karya: true },
+  });
+  const artworkName = artwork?.nama_karya || "Karya Seni";
 
   if (previousHighest && numericAmount <= previousHighest.amount) {
     return res
@@ -50,12 +56,20 @@ router.post("/new", requireAuth, async (req, res) => {
     return res.status(400).json({ message: "Insufficient wallet balance" });
   }
 
+  await prisma.bid.updateMany({
+    where: {
+      artworksId,
+      status: { in: ["OPEN", "TERTINGGI"] },
+    },
+    data: { status: "OUTBID" },
+  });
+
   const bid = await prisma.bid.create({
     data: {
       artworksId,
       amount: numericAmount,
       bidById: req.user.id,
-      status: "OPEN",
+      status: "TERTINGGI",
       timestamp: new Date(),
     },
   });
@@ -102,12 +116,13 @@ router.post("/new", requireAuth, async (req, res) => {
 
     const notificationId = randomUUID();
     const key = `notificationBid:user:${previousHighest.bidById}:${notificationId}`;
-    const message = `Your bid was outbid for artwork ${artworksId}. New highest bid: ${numericAmount}.`;
+    const message = `Penawaran Anda untuk ${artworkName} telah dilewati. Bid tertinggi baru: ${numericAmount}.`;
     const payload = {
       id: notificationId,
       message,
       bidId: bid.id,
       artworksId,
+      artworkName,
       createdAt: new Date().toISOString(),
     };
 
