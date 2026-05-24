@@ -145,6 +145,83 @@ router.put("/:id/cancle", requireAuth, async (req, res) => {
   return res.json(bid);
 });
 
+router.put("/update", async (_req, res) => {
+  const now = new Date();
+  const updated = [];
+  const skipped = [];
+
+  try {
+    await connectRedis();
+  } catch (err) {
+    return res.status(500).json({ message: "Failed to connect to notifications" });
+  }
+
+  const artworksToClose = await prisma.artwork.findMany({
+    where: {
+      bid_close: false,
+      close_bid_time: { not: null, lte: now },
+    },
+    select: { id: true, nama_karya: true },
+  });
+
+  for (const artwork of artworksToClose) {
+    const highestBid = await prisma.bid.findFirst({
+      where: { artworksId: artwork.id, status: { not: "FAILED" } },
+      orderBy: { amount: "desc" },
+    });
+
+    if (!highestBid) {
+      await prisma.artwork.update({
+        where: { id: artwork.id },
+        data: { bid_close: true },
+      });
+      skipped.push({ artworkId: artwork.id, reason: "no-bids" });
+      continue;
+    }
+
+    await prisma.bid.updateMany({
+      where: {
+        artworksId: artwork.id,
+        status: { not: "FAILED" },
+        id: { not: highestBid.id },
+      },
+      data: { status: "OUTBID" },
+    });
+
+    const winningBid = await prisma.bid.update({
+      where: { id: highestBid.id },
+      data: { status: "TERTINGGI" },
+    });
+
+    await prisma.artwork.update({
+      where: { id: artwork.id },
+      data: { bid_close: true },
+    });
+
+    const notificationId = randomUUID();
+    const key = `notificationBid:user:${winningBid.bidById}:${notificationId}`;
+    const message = `Selamat! Penawaran Anda untuk ${artwork.nama_karya} menang dengan harga ${winningBid.amount}.`;
+    const payload = {
+      id: notificationId,
+      message,
+      bidId: winningBid.id,
+      artworksId: artwork.id,
+      artworkName: artwork.nama_karya,
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      await redis.set(key, JSON.stringify(payload));
+    } catch (err) {
+      console.error("Failed to store winner notification", err.message || err);
+    }
+
+    updated.push({ artworkId: artwork.id, bidId: winningBid.id });
+  }
+
+  return res.json({ updated, skipped, total: updated.length });
+});
+
 router.get("/:id/detail", requireAuth, async (req, res) => {
   const bid = await prisma.bid.findUnique({ where: { id: req.params.id } });
   if (!bid) {

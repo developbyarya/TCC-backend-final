@@ -50,6 +50,7 @@ model Artwork {
   katalog             String?
   tags                String?
   verification_status VerificationStatus @default(UNVERIFIED)
+  bid_close           Boolean            @default(false)
   min_bid_ammount     Int
   open_bid_time       DateTime?
   close_bid_time      DateTime?
