@@ -262,7 +262,11 @@ router.get("/low-high", requireAuth, async (_req, res) => {
 });
 
 router.get("/", requireAuth, async (_req, res) => {
-  const bids = await prisma.bid.findMany();
+  const bids = await prisma.bid.findMany({
+    include: {
+      bidBy: { select: { username: true, full_name: true } },
+    },
+  });
   return res.json(bids);
 });
 

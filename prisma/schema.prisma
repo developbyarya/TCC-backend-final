@@ -58,7 +58,7 @@ model Artwork {
   artistId            String
   ownerId             String?
 
-  artist              User   @relation("ArtistArtworks", fields: [artistId], references: [id])
+  artist              User   @relation("ArtistArtworks", fields: [artistId], references: [id], onDelete: Cascade)
   owner               User?  @relation("OwnerArtworks", fields: [ownerId], references: [id])
   bids                Bid[]
   certificate         Certificate?
@@ -85,7 +85,7 @@ model Bid {
   timestamp  DateTime
 
   artwork    Artwork @relation(fields: [artworksId], references: [id])
-  bidBy      User    @relation(fields: [bidById], references: [id])
+  bidBy      User    @relation(fields: [bidById], references: [id], onDelete: Cascade)
   payments   Payment[]
 }
 
@@ -98,5 +98,5 @@ model Payment {
   timestamp DateTime
 
   bid       Bid  @relation(fields: [bidId], references: [id])
-  paidBy    User @relation(fields: [paidById], references: [id])
+  paidBy    User @relation(fields: [paidById], references: [id], onDelete: Cascade)
 }
