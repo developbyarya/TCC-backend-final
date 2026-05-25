@@ -6,6 +6,9 @@ const { redis, connectRedis } = require("../redis");
 
 const router = express.Router();
 
+const getWibNow = () =>
+  new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
+
 router.post("/new", requireAuth, async (req, res) => {
   const artworksId = req.body.artworks_id;
   const amount = req.body.ammount;
@@ -146,7 +149,7 @@ router.put("/:id/cancle", requireAuth, async (req, res) => {
 });
 
 router.put("/update", async (_req, res) => {
-  const now = new Date();
+  const now = getWibNow();
   const updated = [];
   const skipped = [];
 
