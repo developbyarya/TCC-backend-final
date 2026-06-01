@@ -33,10 +33,11 @@ const createApp = () => {
     const swaggerJSDoc = require('swagger-jsdoc');
     const swaggerUi = require('swagger-ui-express');
 
+    const defaultServer = process.env.DEPLOYMENT_URL || 'https://tcc-final-project-805193520.us-central1.run.app/';
     const swaggerDefinition = {
       openapi: '3.0.0',
       info: { title: 'TCC Backend API', version: '1.0.0' },
-      servers: [{ url: 'http://localhost:3000' }],
+      servers: [{ url: defaultServer }],
       components: {
         securitySchemes: {
           bearerAuth: {
