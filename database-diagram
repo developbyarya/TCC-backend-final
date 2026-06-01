@@ -1,0 +1,86 @@
+@startuml
+
+hide circle
+left to right direction
+skinparam linetype ortho
+skinparam nodesep 25
+skinparam ranksep 40
+skinparam packageStyle rectangle
+
+' Models arranged in two rows using packages
+package "Top Row" {
+  entity "User" as User {
+    * id : String <<PK>>
+    --
+    username : String <<UQ>>
+    full_name : String?
+    email : String <<UQ>>
+    phone_number : String
+    passwordHash : String
+    role : UserRole
+    alt_name : String?
+  }
+
+  entity "Artwork" as Artwork {
+    * id : String <<PK>>
+    --
+    nama_karya : String
+    deskripsi : String?
+    image_url : String?
+    katalog : String?
+    tags : String?
+    verification_status : VerificationStatus
+    bid_close : Boolean
+    min_bid_ammount : Int
+    open_bid_time : DateTime?
+    close_bid_time : DateTime?
+    artistId : String <<FK>>
+    ownerId : String? <<FK>>
+  }
+
+  entity "Certificate" as Certificate {
+    * id : String <<PK>>
+    --
+    artworksId : String <<UQ,FK>>
+    artist_altname : String
+    artwork_name : String
+    bid_price_highest : Int
+    congratulation_sentence : String
+    certificate_date : DateTime
+  }
+}
+
+package "Bottom Row" {
+  entity "Bid" as Bid {
+    * id : String <<PK>>
+    --
+    artworksId : String <<FK>>
+    amount : Int
+    bidById : String <<FK>>
+    status : BidStatus
+    timestamp : DateTime
+  }
+
+  entity "Payment" as Payment {
+    * id : String <<PK>>
+    --
+    amount : Int
+    fee : Float
+    bidId : String <<FK>>
+    paidById : String <<FK>>
+    timestamp : DateTime
+  }
+}
+
+' Relationships (with multiplicities)
+User "1" -- "0..*" Artwork : "artist (ArtistArtworks)"
+User "1" -- "0..*" Artwork : "owner (OwnerArtworks)"
+Artwork "1" -- "0..1" Certificate : "certificate"
+Artwork "1" -- "0..*" Bid : "bids"
+Bid "1" -- "0..*" Payment : "payments"
+User "1" -- "0..*" Bid : "bidBy"
+User "1" -- "0..*" Payment : "paidBy"
+
+
+
+@enduml
