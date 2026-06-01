@@ -33,7 +33,9 @@ const createApp = () => {
     const swaggerJSDoc = require('swagger-jsdoc');
     const swaggerUi = require('swagger-ui-express');
 
-    const defaultServer = process.env.DEPLOYMENT_URL || 'https://tcc-final-project-805193520.us-central1.run.app/';
+    // Prefer an explicit CLOUD_RUN_URL (for your Cloud Run deployment),
+    // then DEPLOYMENT_URL, then fallback to localhost for local dev.
+    const defaultServer = process.env.CLOUD_RUN_URL || process.env.DEPLOYMENT_URL || 'http://localhost:3000';
     const swaggerDefinition = {
       openapi: '3.0.0',
       info: { title: 'TCC Backend API', version: '1.0.0' },
