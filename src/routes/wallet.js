@@ -4,6 +4,44 @@ const { redis, connectRedis } = require("../redis");
 
 const router = express.Router();
 
+/**
+ * @openapi
+ * /wallet:
+ *   get:
+ *     summary: Get authenticated user's wallet balance
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Current balance
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 balance:
+ *                   type: number
+ */
+/**
+ * @openapi
+ * /wallet/topup:
+ *   put:
+ *     summary: Top up wallet balance
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               amount:
+ *                 type: number
+ *     responses:
+ *       200:
+ *         description: New balance
+ */
 const getWalletKey = (userId) => `wallet:balance:${userId}`;
 
 router.get("/", requireAuth, async (req, res) => {

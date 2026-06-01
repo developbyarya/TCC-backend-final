@@ -6,6 +6,92 @@ const { redis, connectRedis } = require("../redis");
 
 const router = express.Router();
 
+/**
+ * @openapi
+ * /bid/new:
+ *   post:
+ *     summary: Place a new bid on an artwork
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               artworks_id:
+ *                 type: string
+ *               ammount:
+ *                 type: number
+ *     responses:
+ *       201:
+ *         description: Bid created
+ */
+/**
+ * @openapi
+ * /bid/cancle:
+ *   put:
+ *     summary: Cancel a bid by id
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Bid canceled
+ */
+/**
+ * @openapi
+ * /bid/update:
+ *   put:
+ *     summary: Process and close bids whose time has passed
+ *     responses:
+ *       200:
+ *         description: Summary of processed artworks
+ */
+/**
+ * @openapi
+ * /bid/{id}/detail:
+ *   get:
+ *     summary: Get bid details by id
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Bid details
+ *       404:
+ *         description: Not found
+ */
+/**
+ * @openapi
+ * /bid/low-high:
+ *   get:
+ *     summary: Get lowest and highest bids
+ *     responses:
+ *       200:
+ *         description: low and high bid
+ */
+/**
+ * @openapi
+ * /bid:
+ *   get:
+ *     summary: List bids for authenticated user
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of bids
+ */
+
 const getWibNow = () =>
   new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
 

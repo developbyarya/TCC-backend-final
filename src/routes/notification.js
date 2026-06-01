@@ -4,6 +4,34 @@ const { redis, connectRedis } = require("../redis");
 
 const router = express.Router();
 
+/**
+ * @openapi
+ * /notification:
+ *   get:
+ *     summary: List notifications for authenticated user
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of notifications
+ */
+/**
+ * @openapi
+ * /notification/read/{id}:
+ *   put:
+ *     summary: Mark a notification as read (delete)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Deletion result
+ */
 const parseNotificationValue = (id, value) => {
   try {
     const parsed = JSON.parse(value);

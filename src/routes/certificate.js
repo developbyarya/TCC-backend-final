@@ -4,6 +4,47 @@ const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
 
+/**
+ * @openapi
+ * /certificate:
+ *   post:
+ *     summary: Create a certificate for an artwork after bidding closed
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               artworks_id:
+ *                 type: string
+ *               congratulation_sentence:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Certificate created
+ */
+/**
+ * @openapi
+ * /certificate/{id}:
+ *   get:
+ *     summary: Get certificate by id
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Certificate object
+ *       404:
+ *         description: Not found
+ */
 router.post("/", requireAuth, async (req, res) => {
   const artworksId = req.body.artworks_id || req.body.artwork_id;
   if (!artworksId) {

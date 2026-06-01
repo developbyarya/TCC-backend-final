@@ -4,6 +4,41 @@ const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
 
+/**
+ * @openapi
+ * /payments:
+ *   post:
+ *     summary: Create a payment record for a bid
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               ammounts:
+ *                 type: number
+ *               fee:
+ *                 type: number
+ *               for_bid:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Payment created
+ */
+/**
+ * @openapi
+ * /payments:
+ *   get:
+ *     summary: List payments for authenticated user
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of payment records
+ */
 router.post("/", requireAuth, async (req, res) => {
   const payment = await prisma.payment.create({
     data: {

@@ -7,6 +7,193 @@ const { uploadImageBuffer } = require("../services/gcs");
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
+/**
+ * @openapi
+ * /karya-seni/create:
+ *   post:
+ *     summary: Create artwork
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Artwork'
+ *           examples:
+ *             artwork:
+ *               value:
+ *                 nama_karya: Matahari
+ *                 deskripsi: Lukisan abstrak.
+ *                 katalog: Modern
+ *                 tags: abstrak,modern
+ *                 min_bid_ammount: 100
+ *     responses:
+ *       201:
+ *         description: Created artwork object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Artwork'
+ */
+
+/**
+ * @openapi
+ * /karya-seni/all:
+ *   get:
+ *     summary: List artworks
+ *     parameters:
+ *       - in: query
+ *         name: katalog
+ *         schema:
+ *           type: string
+ *         description: Comma separated katalog filters
+ *     responses:
+ *       200:
+ *         description: Array of artworks
+ */
+
+/**
+ * @openapi
+ * /karya-seni/{id}:
+ *   get:
+ *     summary: Get artwork by id
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Artwork object
+ *       404:
+ *         description: Not found
+ */
+
+/**
+ * @openapi
+ * /karya-seni/{id}/owns:
+ *   put:
+ *     summary: Set owner to authenticated user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Artwork updated with ownerId
+ */
+
+/**
+ * @openapi
+ * /karya-seni/{id}/detail:
+ *   put:
+ *     summary: Update artwork details (artist only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Artwork'
+ *     responses:
+ *       200:
+ *         description: Updated artwork
+ */
+
+/**
+ * @openapi
+ * /karya-seni/{id}/delete:
+ *   delete:
+ *     summary: Delete artwork
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Deleted
+ */
+
+/**
+ * @openapi
+ * /karya-seni/{id}/verify:
+ *   put:
+ *     summary: Verify artwork (kurator)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Artwork verified
+ */
+
+/**
+ * @openapi
+ * /karya-seni/{id}/unverify:
+ *   put:
+ *     summary: Unverify artwork (kurator)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Artwork unverified
+ */
+
+/**
+ * @openapi
+ * /karya-seni/{id}/image:
+ *   post:
+ *     summary: Upload artwork image (multipart)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Image uploaded
+ */
 router.post("/create", requireAuth, requireRole(["SENIMAN"]), async (req, res) => {
   const artwork = await prisma.artwork.create({
     data: {

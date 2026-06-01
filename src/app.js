@@ -18,6 +18,7 @@ const createApp = () => {
   app.use(cors());
   app.use(express.json());
 
+  // --- API routes ---
   app.use("/user", userRoutes);
   app.use("/karya-seni", artworksRoutes);
   app.use("/bid", biddingRoutes);
@@ -26,6 +27,85 @@ const createApp = () => {
   app.use("/notification", notificationRoutes);
   app.use("/wallet", walletRoutes);
   app.use("/certificate", certificateRoutes);
+
+  // --- Swagger / OpenAPI (generated from JSDoc annotations) ---
+  try {
+    const swaggerJSDoc = require('swagger-jsdoc');
+    const swaggerUi = require('swagger-ui-express');
+
+    const swaggerDefinition = {
+      openapi: '3.0.0',
+      info: { title: 'TCC Backend API', version: '1.0.0' },
+      servers: [{ url: 'http://localhost:3000' }],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT'
+          }
+        },
+        schemas: {
+          UserRegister: {
+            type: 'object',
+            properties: {
+              username: { type: 'string' },
+              email: { type: 'string' },
+              password: { type: 'string' }
+            }
+          },
+          Artwork: {
+            type: 'object',
+            properties: {
+              nama_karya: { type: 'string' },
+              deskripsi: { type: 'string' },
+              katalog: { type: 'string' },
+              tags: { type: 'string' },
+              min_bid_ammount: { type: 'number' }
+            }
+          },
+          Bid: {
+            type: 'object',
+            properties: {
+              artworks_id: { type: 'string' },
+              ammount: { type: 'number' }
+            }
+          },
+          Certificate: {
+            type: 'object',
+            properties: {
+              artworks_id: { type: 'string' },
+              congratulation_sentence: { type: 'string' }
+            }
+          }
+        }
+      },
+    };
+
+    const options = {
+      swaggerDefinition,
+      // scan route files for JSDoc comments
+      apis: [__dirname + '/routes/*.js']
+    };
+
+    const swaggerSpec = swaggerJSDoc(options);
+
+    app.use('/openapi.json', (_req, res) => res.json(swaggerSpec));
+    app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  } catch (err) {
+    // optional dependency might not be installed during some workflows
+    console.warn('swagger-jsdoc not available', err && err.message);
+  }
+
+  // Serve OpenAPI spec and Swagger UI
+  app.get('/openapi.json', (_req, res) => {
+    // send the bundled OpenAPI JSON
+    return res.sendFile(require('path').join(__dirname, '..', 'docs', 'openapi.json'));
+  });
+
+  app.get('/docs', (_req, res) => {
+    return res.sendFile(require('path').join(__dirname, '..', 'docs', 'swagger.html'));
+  });
 
   app.get("/health", async (_req, res) => {
     const checks = {

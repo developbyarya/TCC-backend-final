@@ -8,6 +8,38 @@ const { randomUUID } = require("crypto");
 
 const router = express.Router();
 
+/**
+ * @openapi
+ * /user/login:
+ *   post:
+ *     summary: Log in with username/email and password
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Tokens
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                 refreshToken:
+ *                   type: string
+ */
+
 router.post("/login", async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -53,6 +85,22 @@ router.post("/login", async (req, res) => {
 
   return res.json({ token: accessToken, refreshToken });
 });
+
+/**
+ * @openapi
+ * /user/register:
+ *   post:
+ *     summary: Register a new user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserRegister'
+ *     responses:
+ *       201:
+ *         description: Created
+ */
 
 router.post("/register", async (req, res) => {
   const { username, full_name, email, phone_number, password, role, alt_name } =

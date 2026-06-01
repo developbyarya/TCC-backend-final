@@ -5,6 +5,54 @@ const { redis, connectRedis } = require("../redis");
 
 const router = express.Router();
 
+/**
+ * @openapi
+ * /wishlisht:
+ *   get:
+ *     summary: Get current user's wishlist (artwork objects)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Wishlist
+ */
+/**
+ * @openapi
+ * /wishlisht:
+ *   post:
+ *     summary: Add an artwork to wishlist
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               artworkId:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Added
+ */
+/**
+ * @openapi
+ * /wishlisht/{artworkId}:
+ *   delete:
+ *     summary: Remove an artwork from wishlist
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: artworkId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Removed
+ */
 // Get current user's wishlist (returns artwork objects)
 router.get("/", requireAuth, async (req, res) => {
   const userId = req.user.id;
