@@ -5,6 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "dev": "node src/index.js",
+    "build": "npm run prisma:generate",
+    "vercel-build": "npm run prisma:generate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "test": "node -e \"require('./src/app').createApp()\"",
